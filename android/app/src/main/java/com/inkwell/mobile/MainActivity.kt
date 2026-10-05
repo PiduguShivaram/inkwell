@@ -1,6 +1,10 @@
 package com.inkwell.mobile
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -9,6 +13,7 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
+import com.google.gson.Gson
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -66,6 +71,14 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnRescan.setOnClickListener {
             resetToCamera()
+        }
+
+        binding.btnOfficeKitHandoff.setOnClickListener {
+            handoffViaOfficeKitClipboard()
+        }
+
+        binding.btnOfficeKitShare.setOnClickListener {
+            shareGraphViaEasyShare()
         }
 
         binding.btnConfirmCompile.setOnClickListener {
@@ -257,6 +270,69 @@ class MainActivity : AppCompatActivity() {
 
             binding.containerNodesList.addView(nodeItem)
         }
+    }
+
+    /**
+     * Phase 4: Office Kit Super Clipboard Bridge
+     * Copies verified Graph IR to Android ClipboardManager (which Office Kit automatically syncs to PC)
+     * and triggers bridge notification.
+     */
+    private fun handoffViaOfficeKitClipboard() {
+        val graph = currentGraph ?: return
+        binding.layoutProcessing.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            try {
+                val gson = Gson()
+                val jsonString = gson.toJson(graph)
+
+                // 1. Android system clipboard write -> synced via vivo/iQOO Office Kit Super Clipboard
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("inkwell-graph-ir", jsonString)
+                clipboard.setPrimaryClip(clip)
+
+                // 2. Direct network handoff to laptop endpoint
+                val result = apiClient.handoffViaBridge(graph, "office-kit-clipboard")
+                binding.layoutProcessing.visibility = View.GONE
+
+                Toast.makeText(
+                    baseContext,
+                    "Office Kit: Graph IR copied to Super Clipboard & handed off to Laptop.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                // Reveal Live Observation button
+                binding.btnLiveOverlay.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                binding.layoutProcessing.visibility = View.GONE
+                Toast.makeText(
+                    baseContext,
+                    "Graph IR copied to Super Clipboard! Paste on Laptop to Compile.",
+                    Toast.LENGTH_LONG
+                ).show()
+                binding.btnLiveOverlay.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    /**
+     * Phase 4: Office Kit EasyShare File Transfer
+     * Opens Android system share sheet to send inkwell-graph-ir.json directly to PC via EasyShare.
+     */
+    private fun shareGraphViaEasyShare() {
+        val graph = currentGraph ?: return
+        val gson = Gson()
+        val jsonString = gson.toJson(graph)
+
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, jsonString)
+            putExtra(Intent.EXTRA_SUBJECT, "inkwell-graph-ir.json")
+            type = "application/json"
+        }
+        val shareIntent = Intent.createChooser(sendIntent, "Share Graph IR via EasyShare or Nearby")
+        startActivity(shareIntent)
+        binding.btnLiveOverlay.visibility = View.VISIBLE
     }
 
     private fun confirmAndCompile() {

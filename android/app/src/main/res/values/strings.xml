@@ -3,7 +3,9 @@
     <string name="capture_sketch">Capture Architecture Sketch</string>
     <string name="snap_photo">Snap Photo</string>
     <string name="rescan">Re-scan</string>
-    <string name="confirm_graph">Confirm &amp; Compile</string>
+    <string name="confirm_graph">Direct Compile via Local Bridge</string>
     <string name="processing">Recognizing Sketch with OpenCV &amp; WinOCR...</string>
     <string name="ready_to_capture">Point camera at hand-drawn architecture sketch</string>
+    <string name="office_kit_handoff">OFFICE KIT HANDOFF (SUPER CLIPBOARD)</string>
+    <string name="office_kit_share">SHARE GRAPH VIA EASYSHARE</string>
 </resources>

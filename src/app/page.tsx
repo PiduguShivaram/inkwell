@@ -5,6 +5,7 @@ import { CanvasWorkspace } from '@/components/CanvasWorkspace';
 import { CompilerInspector } from '@/components/CompilerInspector';
 import { Header } from '@/components/Header';
 import { HealthTelemetryPanel } from '@/components/HealthTelemetryPanel';
+import { OfficeKitBridgePanel } from '@/components/OfficeKitBridgePanel';
 import { RuntimePanel } from '@/components/RuntimePanel';
 import { SketchIngestionPanel } from '@/components/SketchIngestionModal';
 import { ValidationPanel } from '@/components/ValidationPanel';
@@ -192,6 +193,21 @@ export default function InkwellWorkspacePage() {
               onSelectNode={(nodeId) => setSelectedNodeId(nodeId)}
             />
           </div>
+        )}
+
+        {/* TAB 1.5: Phase 4 Office Kit & Phone/Laptop Bridge */}
+        {activeTab === 'bridge' && (
+          <OfficeKitBridgePanel
+            onGraphReceived={(receivedGraph, project) => {
+              setGraph(receivedGraph);
+              if (project) {
+                setCompiledProject(project);
+                setCompiledDiskPath(`.inkwell/generated/${project.projectName}`);
+              }
+            }}
+            activeProject={compiledProject}
+            onRefreshRuntime={fetchContainers}
+          />
         )}
 
         {/* TAB 2: Compiler Inspector */}

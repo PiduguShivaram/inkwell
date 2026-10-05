@@ -100,6 +100,36 @@ class InkwellApiClient(
         throw lastException ?: Exception("Failed to compile confirmed graph")
     }
 
+    suspend fun handoffViaBridge(graph: GraphIR, source: String = "office-kit-clipboard"): CompileResponse = withContext(Dispatchers.IO) {
+        val payload = JSONObject().apply {
+            put("graph", JSONObject(gson.toJson(graph)))
+            put("source", source)
+            put("autoStartDocker", true)
+        }
+        val urlsToTry = listOf(primaryUrl) + candidateUrls.filter { it != primaryUrl }
+        var lastException: Exception? = null
+
+        for (url in urlsToTry) {
+            try {
+                val request = Request.Builder()
+                    .url("$url/api/office-kit/handoff")
+                    .post(payload.toString().toRequestBody(jsonMediaType))
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    val bodyString = response.body?.string() ?: ""
+                    if (response.isSuccessful) {
+                        return@withContext gson.fromJson(bodyString, CompileResponse::class.java)
+                    }
+                }
+            } catch (e: Exception) {
+                lastException = e
+            }
+        }
+
+        throw lastException ?: Exception("Failed to handoff graph via bridge")
+    }
+
     suspend fun fetchLiveTelemetry(projectName: String? = null): TelemetryResponse = withContext(Dispatchers.IO) {
         val targetPath = if (projectName != null) "/api/telemetry?projectName=$projectName" else "/api/telemetry"
         val urlsToTry = listOf(primaryUrl) + candidateUrls.filter { it != primaryUrl }
