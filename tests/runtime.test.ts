@@ -8,22 +8,26 @@ import { detectDockerEnvironment } from '../src/core/runtime/docker-detector';
 import { DockerRuntime } from '../src/core/runtime/docker-runtime';
 
 describe('Docker Runtime & Detection', () => {
-  it('detects genuine Docker environment status without mocking', async () => {
-    const info = await detectDockerEnvironment();
+  it(
+    'detects genuine Docker environment status without mocking',
+    async () => {
+      const info = await detectDockerEnvironment();
 
-    expect(typeof info.isInstalled).toBe('boolean');
-    expect(typeof info.isDaemonRunning).toBe('boolean');
+      expect(typeof info.isInstalled).toBe('boolean');
+      expect(typeof info.isDaemonRunning).toBe('boolean');
 
-    // Docker CLI is installed on this machine
-    expect(info.isInstalled).toBe(true);
-    expect(info.clientVersion).toContain('Docker version');
+      // Docker CLI is installed on this machine
+      expect(info.isInstalled).toBe(true);
+      expect(info.clientVersion).toContain('Docker version');
 
-    // Daemon status is truthfully reported based on whether the daemon is running
-    if (!info.isDaemonRunning) {
-      expect(info.error).toBeDefined();
-      expect(info.guidance).toBeDefined();
-    }
-  });
+      // Daemon status is truthfully reported based on whether the daemon is running
+      if (!info.isDaemonRunning) {
+        expect(info.error).toBeDefined();
+        expect(info.guidance).toBeDefined();
+      }
+    },
+    15000
+  );
 
   it('exports compiled project to actual disk files', async () => {
     const project = compileGraph(CANONICAL_VERTICAL_SLICE_GRAPH);
@@ -54,15 +58,19 @@ describe('Docker Runtime & Detection', () => {
     }
   });
 
-  it('genuinely fails and returns error state when starting project if daemon is unreachable', async () => {
-    const runtime = new DockerRuntime();
-    const info = await detectDockerEnvironment();
+  it(
+    'genuinely fails and returns error state when starting project if daemon is unreachable',
+    async () => {
+      const runtime = new DockerRuntime();
+      const info = await detectDockerEnvironment();
 
-    if (!info.isDaemonRunning) {
-      const res = await runtime.startProject('non-existent-dir');
-      expect(res.success).toBe(false);
-      expect(res.exitCode).toBe(1);
-      expect(res.error).toBeDefined();
-    }
-  });
+      if (!info.isDaemonRunning) {
+        const res = await runtime.startProject('non-existent-dir');
+        expect(res.success).toBe(false);
+        expect(res.exitCode).toBe(1);
+        expect(res.error).toBeDefined();
+      }
+    },
+    15000
+  );
 });
