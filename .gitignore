@@ -2,14 +2,28 @@
 node_modules
 .pnpm-store
 
-# Next.js
+# Next.js & Build Caches
 .next/
 out/
+tsconfig.tsbuildinfo
 
 # Inkwell generated projects
 .inkwell/generated/
 
+# Android Build & Gradle
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# IDE & Editor caches
+.idea/
+.vscode/
+
+# Screenshots & Temporary Evidence
+phone_screen*.png
+
 # Environment files
+.env
 .env*.local
 
 # Logs
@@ -21,3 +35,4 @@ pnpm-debug.log*
 # OS
 Thumbs.db
 .DS_Store
+

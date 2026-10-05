@@ -1,3 +1,4 @@
+import { NativeComputerVisionProvider } from './native-pipeline';
 import {
   GraphExtractionResult,
   ImageMetadata,
@@ -7,8 +8,39 @@ import {
 } from './types';
 
 /**
+ * Phase 2 Native Vision Model Provider.
+ * Integrates real OpenCV contour & stroke analysis with Windows Native WinOCR.
+ */
+export class Phase2VisionModelProvider implements VisionModelProvider {
+  private nativeProvider: NativeComputerVisionProvider;
+
+  constructor() {
+    this.nativeProvider = new NativeComputerVisionProvider();
+  }
+
+  async getInfo(): Promise<VisionModelInfo> {
+    return this.nativeProvider.getInfo();
+  }
+
+  async isAvailable(): Promise<boolean> {
+    return this.nativeProvider.isAvailable();
+  }
+
+  async preprocessImage(metadata: ImageMetadata): Promise<IngestionStage> {
+    return this.nativeProvider.preprocessImage(metadata);
+  }
+
+  async extractGraph(
+    imageDataUrl: string,
+    metadata: ImageMetadata
+  ): Promise<GraphExtractionResult> {
+    return this.nativeProvider.extractGraph(imageDataUrl, metadata);
+  }
+}
+
+/**
  * Phase 1 Foundation Vision Model Provider.
- * Inspects real model availability and explicitly prevents mock/fake inference.
+ * Preserved for backwards compatibility and regression testing.
  */
 export class Phase1VisionModelProvider implements VisionModelProvider {
   private customEndpointUrl?: string;
@@ -104,7 +136,6 @@ export class Phase1VisionModelProvider implements VisionModelProvider {
       };
     }
 
-    // If an actual real external endpoint was configured:
     try {
       const res = await fetch(`${this.customEndpointUrl}/extract`, {
         method: 'POST',
@@ -150,4 +181,11 @@ export class Phase1VisionModelProvider implements VisionModelProvider {
       };
     }
   }
+}
+
+/**
+ * Returns the active default vision provider for Inkwell.
+ */
+export function getDefaultVisionProvider(): VisionModelProvider {
+  return new Phase2VisionModelProvider();
 }

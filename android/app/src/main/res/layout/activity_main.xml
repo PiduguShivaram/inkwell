@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/slate_50">
+
+    <!-- App Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/slate_900"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="INKWELL MOBILE"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:fontFamily="monospace" />
+
+        <TextView
+            android:id="@+id/tvBackendStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phase 3 Overlay Ready"
+            android:textColor="@color/inkwell_emerald"
+            android:textSize="12sp"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- 1. Camera Viewport & Capture Section -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="380dp"
+                        android:background="@color/black">
+
+                        <!-- Real CameraX PreviewView -->
+                        <androidx.camera.view.PreviewView
+                            android:id="@+id/cameraPreviewView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
+                        <!-- Phase 3 Live Drawing Overlay View -->
+                        <com.inkwell.mobile.views.DrawingOverlayView
+                            android:id="@+id/drawingOverlayView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone" />
+
+                        <!-- Captured Image Preview (Shown when frame captured) -->
+                        <ImageView
+                            android:id="@+id/ivCapturedPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <!-- Processing Indicator Overlay -->
+                        <LinearLayout
+                            android:id="@+id/layoutProcessing"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#CC0F172A"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <ProgressBar
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:indeterminateTint="@color/inkwell_blue" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="@string/processing"
+                                android:textColor="@color/white"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- Camera Action Bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:background="@color/white">
+
+                        <Button
+                            android:id="@+id/btnCapture"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/snap_photo"
+                            android:backgroundTint="@color/inkwell_blue"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btnRescan"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/rescan"
+                            android:backgroundTint="@color/slate_200"
+                            android:textColor="@color/slate_700"
+                            android:visibility="gone" />
+
+                        <Button
+                            android:id="@+id/btnExitOverlay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="EXIT OVERLAY"
+                            android:backgroundTint="@color/slate_700"
+                            android:textColor="@color/white"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 2. Recognition & Verification Container -->
+            <LinearLayout
+                android:id="@+id/layoutVerification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Evidence Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="1dp"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp"
+                        android:background="#F0FDF4">
+
+                        <TextView
+                            android:id="@+id/tvConfidence"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Recognition Confidence: 98%"
+                            android:textColor="@color/inkwell_emerald_dark"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvEvidenceDetails"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Engine: Native OpenCV 5.0 + WinOCR | Elements: 4 Nodes, 3 Arrows"
+                            android:textColor="@color/slate_700"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Detected Nodes List Container -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RECOGNIZED NODES (VERIFICATION)"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/slate_700"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/containerNodesList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <!-- Confirm Action Button -->
+                <Button
+                    android:id="@+id/btnConfirmCompile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/confirm_graph"
+                    android:backgroundTint="@color/inkwell_emerald"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:padding="12dp" />
+
+                <!-- Phase 3 Live Overlay Trigger Button -->
+                <Button
+                    android:id="@+id/btnLiveOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="ENTER LIVE RUNTIME OBSERVATION"
+                    android:backgroundTint="@color/inkwell_blue"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:padding="12dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

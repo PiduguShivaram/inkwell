@@ -229,7 +229,13 @@ export default function InkwellWorkspacePage() {
 
         {/* TAB 5: Vision & Camera Ingestion */}
         {activeTab === 'vision' && (
-          <SketchIngestionPanel visionInfo={visionInfo} />
+          <SketchIngestionPanel
+            visionInfo={visionInfo}
+            onConfirmGraph={(confirmedGraph) => {
+              setGraph(confirmedGraph);
+              setActiveTab('workspace');
+            }}
+          />
         )}
       </main>
 

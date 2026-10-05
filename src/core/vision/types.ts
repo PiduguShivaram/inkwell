@@ -24,6 +24,29 @@ export interface GraphExtractionResult {
   stages: IngestionStage[];
   error?: string;
   providerUsed: string;
+  detectedElements?: {
+    nodeCount: number;
+    edgeCount: number;
+    boxesDetected: number;
+    ocrWordsDetected: number;
+    nodes: Array<{
+      id: string;
+      type: string;
+      label: string;
+      position: { x: number; y: number };
+      width?: number;
+      height?: number;
+      confidence: number;
+      extractedText: string;
+    }>;
+  };
+  referenceFrame?: {
+    width: number;
+    height: number;
+    corners: Array<{ x: number; y: number }>;
+    bounds: { x: number; y: number; width: number; height: number };
+    nodeRegions: Record<string, { x: number; y: number; width: number; height: number }>;
+  };
 }
 
 export interface VisionModelInfo {
