@@ -155,4 +155,42 @@ class InkwellApiClient(
 
         throw lastException ?: Exception("Failed to fetch live telemetry")
     }
+
+    suspend fun resetDemo(): Boolean = withContext(Dispatchers.IO) {
+        val urlsToTry = listOf(primaryUrl) + candidateUrls.filter { it != primaryUrl }
+        for (url in urlsToTry) {
+            try {
+                val request = Request.Builder()
+                    .url("$url/api/demo/reset")
+                    .post("{}".toRequestBody(jsonMediaType))
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) return@withContext true
+                }
+            } catch (_: Exception) {}
+        }
+        return@withContext false
+    }
+
+    suspend fun updateDemoStep(step: String, message: String? = null): Boolean = withContext(Dispatchers.IO) {
+        val payload = JSONObject().apply {
+            put("step", step)
+            if (message != null) put("message", message)
+        }
+        val urlsToTry = listOf(primaryUrl) + candidateUrls.filter { it != primaryUrl }
+        for (url in urlsToTry) {
+            try {
+                val request = Request.Builder()
+                    .url("$url/api/demo/state")
+                    .post(payload.toString().toRequestBody(jsonMediaType))
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) return@withContext true
+                }
+            } catch (_: Exception) {}
+        }
+        return@withContext false
+    }
 }

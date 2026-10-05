@@ -52,12 +52,12 @@ export class DockerRuntime {
     }
 
     try {
-      const { stdout, stderr } = await execAsync('docker compose up -d --build', {
+      const { stdout, stderr } = await execAsync('docker compose up -d --build --remove-orphans', {
         cwd: projectDir,
       });
       return {
         success: true,
-        command: 'docker compose up -d --build',
+        command: 'docker compose up -d --build --remove-orphans',
         stdout: stdout.trim(),
         stderr: stderr.trim(),
         exitCode: 0,

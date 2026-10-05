@@ -213,7 +213,7 @@ function generateComposeYaml(projectName: string, services: CompiledServiceSpec[
     // Healthcheck
     if (s.type === 'service' || s.type === 'worker') {
       lines.push(`    healthcheck:`);
-      lines.push(`      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${s.internalPort}/health"]`);
+      lines.push(`      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:${s.internalPort}/health"]`);
       lines.push(`      interval: 10s`);
       lines.push(`      timeout: 5s`);
       lines.push(`      retries: 3`);

@@ -15,24 +15,44 @@
         android:background="@color/slate_900"
         android:gravity="center_vertical">
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="INKWELL MOBILE"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:fontFamily="monospace" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvBackendStatus"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="INKWELL"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/tvDemoStep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="[STEP 1/8 READY] Point Camera"
+                android:textColor="@color/inkwell_blue"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnDemoReset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Phase 3 Overlay Ready"
-            android:textColor="@color/inkwell_emerald"
-            android:textSize="12sp"
-            android:fontFamily="monospace" />
+            android:text="RESET"
+            android:textSize="11sp"
+            android:backgroundTint="@color/slate_800"
+            android:textColor="@color/white"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp" />
     </LinearLayout>
 
     <ScrollView

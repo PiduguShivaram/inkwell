@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { CanvasWorkspace } from '@/components/CanvasWorkspace';
 import { CompilerInspector } from '@/components/CompilerInspector';
+import { DemoModePanel } from '@/components/DemoModePanel';
 import { Header } from '@/components/Header';
 import { HealthTelemetryPanel } from '@/components/HealthTelemetryPanel';
 import { OfficeKitBridgePanel } from '@/components/OfficeKitBridgePanel';
@@ -24,7 +25,7 @@ export default function InkwellWorkspacePage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // Active navigation tab
-  const [activeTab, setActiveTab] = useState<string>('workspace');
+  const [activeTab, setActiveTab] = useState<string>('demo');
 
   // Environment and status states
   const [dockerInfo, setDockerInfo] = useState<DockerEnvironmentInfo | null>(null);
@@ -176,6 +177,16 @@ export default function InkwellWorkspacePage() {
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* TAB 0: Hackathon Live Demo Mode */}
+        {activeTab === 'demo' && (
+          <DemoModePanel
+            onResetComplete={() => {
+              setGraph(CANONICAL_VERTICAL_SLICE_GRAPH);
+              fetchContainers();
+            }}
+          />
+        )}
+
         {/* TAB 1: Architecture Canvas & Validation */}
         {activeTab === 'workspace' && (
           <div className="space-y-6">

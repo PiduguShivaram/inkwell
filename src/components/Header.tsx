@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, CheckCircle2, Cpu, Eye, Layers, Radio, RefreshCw, Terminal, XCircle } from 'lucide-react';
+import { Box, CheckCircle2, Cpu, Eye, Layers, Radio, RefreshCw, Terminal, XCircle, Zap } from 'lucide-react';
 import { DockerEnvironmentInfo } from '@/core/runtime/types';
 import { VisionModelInfo } from '@/core/vision/types';
 
@@ -136,6 +136,7 @@ export function Header({
         {/* Navigation Tabs */}
         <div className="flex space-x-1 -mb-px overflow-x-auto border-t border-[#f1f5f9] pt-2">
           {[
+            { id: 'demo', label: '⚡ Hackathon Demo', icon: Zap },
             { id: 'workspace', label: 'Architecture Workspace', icon: Box },
             { id: 'bridge', label: 'Office Kit & Bridge', icon: Radio },
             { id: 'compiler', label: 'Compiler & Output', icon: Terminal },

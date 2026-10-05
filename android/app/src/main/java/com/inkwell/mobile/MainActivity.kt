@@ -55,6 +55,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         if (allPermissionsGranted()) {
@@ -63,6 +69,10 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
             )
+        }
+
+        binding.btnDemoReset.setOnClickListener {
+            resetDemoFlow()
         }
 
         binding.btnCapture.setOnClickListener {
@@ -138,10 +148,28 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    private fun resetDemoFlow() {
+        binding.layoutProcessing.visibility = View.VISIBLE
+        binding.tvDemoStep.text = "[RESETTING...] Resetting Docker Pipeline"
+        lifecycleScope.launch {
+            apiClient.resetDemo()
+            binding.layoutProcessing.visibility = View.GONE
+            resetToCamera()
+            binding.tvDemoStep.text = "[STEP 1/8 READY] Point Camera"
+            binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_blue))
+            Toast.makeText(baseContext, "Demo Reset to Canonical Baseline", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
         binding.layoutProcessing.visibility = View.VISIBLE
+        binding.tvDemoStep.text = "[STEP 2/8 SCANNING] Processing Sketch..."
+        binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_blue))
+        lifecycleScope.launch {
+            apiClient.updateDemoStep("SCANNING")
+        }
 
         imageCapture.takePicture(
             ContextCompat.getMainExecutor(this),
@@ -199,6 +227,8 @@ class MainActivity : AppCompatActivity() {
         binding.layoutVerification.visibility = View.GONE
         binding.btnLiveOverlay.visibility = View.GONE
         binding.drawingOverlayView.visibility = View.GONE
+        binding.tvDemoStep.text = "[STEP 1/8 READY] Point Camera"
+        binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_blue))
         currentGraph = null
         currentReferenceFrame = null
     }
@@ -219,6 +249,9 @@ class MainActivity : AppCompatActivity() {
                     currentGraph = result.graph
                     currentReferenceFrame = result.referenceFrame ?: createFallbackReference(result.graph, bitmap.width, bitmap.height)
                     renderVerificationUi(result.graph, result.confidence ?: 0.95)
+                    binding.tvDemoStep.text = "[STEP 3/8 VERIFY] ${result.graph.nodes.size} Nodes Confirmed"
+                    binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_emerald))
+                    apiClient.updateDemoStep("VERIFY")
                 } else {
                     Toast.makeText(
                         baseContext,
@@ -295,6 +328,10 @@ class MainActivity : AppCompatActivity() {
                 val result = apiClient.handoffViaBridge(graph, "office-kit-clipboard")
                 binding.layoutProcessing.visibility = View.GONE
 
+                binding.tvDemoStep.text = "[STEP 4/8 HANDOFF] Copied to Super Clipboard"
+                binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_emerald))
+                apiClient.updateDemoStep("HANDOFF", "Copied to Super Clipboard")
+
                 Toast.makeText(
                     baseContext,
                     "Office Kit: Graph IR copied to Super Clipboard & handed off to Laptop.",
@@ -305,6 +342,10 @@ class MainActivity : AppCompatActivity() {
                 binding.btnLiveOverlay.visibility = View.VISIBLE
             } catch (e: Exception) {
                 binding.layoutProcessing.visibility = View.GONE
+                binding.tvDemoStep.text = "[STEP 4/8 HANDOFF] Copied to Super Clipboard"
+                binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_emerald))
+                apiClient.updateDemoStep("HANDOFF", "Copied to Super Clipboard")
+
                 Toast.makeText(
                     baseContext,
                     "Graph IR copied to Super Clipboard! Paste on Laptop to Compile.",
@@ -345,6 +386,10 @@ class MainActivity : AppCompatActivity() {
                 binding.layoutProcessing.visibility = View.GONE
 
                 if (compileResult.success) {
+                    binding.tvDemoStep.text = "[STEP 5/8 RUNNING] Containers Live"
+                    binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_emerald))
+                    apiClient.updateDemoStep("RUNNING", "Containers Live")
+
                     Toast.makeText(
                         baseContext,
                         "Successfully compiled: ${compileResult.diskPath}",
@@ -385,6 +430,12 @@ class MainActivity : AppCompatActivity() {
         binding.btnRescan.visibility = View.GONE
         binding.btnExitOverlay.visibility = View.VISIBLE
 
+        binding.tvDemoStep.text = "[STEP 6/8 OBSERVING] Live Telemetry HUD"
+        binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_blue))
+        lifecycleScope.launch {
+            apiClient.updateDemoStep("OBSERVING", "Live Telemetry HUD")
+        }
+
         // 2. Register drawing reference in SpatialAlignmentEngine
         spatialAlignmentEngine.setReference(frame, graph.nodes)
 
@@ -405,6 +456,22 @@ class MainActivity : AppCompatActivity() {
                         val confidence = spatialAlignmentEngine.getConfidence()
 
                         binding.drawingOverlayView.updateOverlays(alignedNodes, status, confidence)
+
+                        // Evaluate real container health for demo Step 7 (Failure) and Step 8 (Recovered)
+                        val workerNode = alignedNodes.find { it.nodeId.contains("worker", ignoreCase = true) || it.label.contains("worker", ignoreCase = true) }
+                        val anyNodeDown = alignedNodes.any { it.status.equals("DOWN", ignoreCase = true) }
+
+                        if (anyNodeDown || (workerNode != null && workerNode.status.equals("DOWN", ignoreCase = true))) {
+                            binding.tvDemoStep.text = "[STEP 7/8 FAILURE] ▲ WORKER DOWN"
+                            binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_crimson))
+                            apiClient.updateDemoStep("FAILURE", "Worker Container Down")
+                        } else if (workerNode != null && workerNode.status.equals("HEALTHY", ignoreCase = true)) {
+                            if (binding.tvDemoStep.text.contains("FAILURE")) {
+                                binding.tvDemoStep.text = "[STEP 8/8 RECOVERED] ● WORKER HEALTHY"
+                                binding.tvDemoStep.setTextColor(ContextCompat.getColor(baseContext, R.color.inkwell_emerald))
+                                apiClient.updateDemoStep("RECOVERED", "Worker Container Recovered")
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     binding.drawingOverlayView.updateOverlays(
