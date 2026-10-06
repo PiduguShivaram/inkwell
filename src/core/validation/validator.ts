@@ -60,6 +60,31 @@ export function validateGraphIR(graph: GraphIR): ValidationResult {
       });
     }
 
+    if (node.ports) {
+      if (
+        node.ports.hostPort !== undefined &&
+        (isNaN(node.ports.hostPort) || node.ports.hostPort < 1 || node.ports.hostPort > 65535)
+      ) {
+        errors.push({
+          code: 'INVALID_PORT',
+          message: `Node "${node.id}" has invalid host port ${node.ports.hostPort}. Valid port range is 1-65535.`,
+          severity: 'error',
+          nodeId: node.id,
+        });
+      }
+      if (
+        node.ports.internalPort !== undefined &&
+        (isNaN(node.ports.internalPort) || node.ports.internalPort < 1 || node.ports.internalPort > 65535)
+      ) {
+        errors.push({
+          code: 'INVALID_PORT',
+          message: `Node "${node.id}" has invalid internal port ${node.ports.internalPort}. Valid port range is 1-65535.`,
+          severity: 'error',
+          nodeId: node.id,
+        });
+      }
+    }
+
     if (!node.label || node.label.trim() === '') {
       warnings.push({
         code: 'EMPTY_NODE_LABEL',

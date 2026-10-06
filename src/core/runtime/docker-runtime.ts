@@ -156,8 +156,207 @@ export class DockerRuntime {
   }
 
   /**
-   * Reads real container statuses from `docker compose ps --format json`.
+   * Starts a specific service in the project compose configuration.
    */
+  async startService(projectDir: string, serviceName: string): Promise<RuntimeExecutionResult> {
+    const safeService = serviceName.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeService) {
+      return {
+        success: false,
+        command: 'docker compose start',
+        stdout: '',
+        stderr: 'Invalid service name provided.',
+        exitCode: 1,
+        error: 'Invalid service name provided.',
+      };
+    }
+
+    const dockerEnv = await detectDockerEnvironment();
+    if (!dockerEnv.isDaemonRunning) {
+      return {
+        success: false,
+        command: `docker compose start ${safeService}`,
+        stdout: '',
+        stderr: dockerEnv.error || 'Docker daemon is not running.',
+        exitCode: 1,
+        error: `${dockerEnv.error} ${dockerEnv.guidance || ''}`.trim(),
+      };
+    }
+
+    try {
+      const { stdout, stderr } = await execAsync(`docker compose start ${safeService}`, {
+        cwd: projectDir,
+      });
+      return {
+        success: true,
+        command: `docker compose start ${safeService}`,
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+        exitCode: 0,
+      };
+    } catch (err: unknown) {
+      const error = err as { stdout?: string; stderr?: string; code?: number; message?: string };
+      return {
+        success: false,
+        command: `docker compose start ${safeService}`,
+        stdout: error.stdout || '',
+        stderr: error.stderr || error.message || String(err),
+        exitCode: error.code || 1,
+        error: error.message || String(err),
+      };
+    }
+  }
+
+  /**
+   * Stops a specific service in the project compose configuration.
+   */
+  async stopService(projectDir: string, serviceName: string): Promise<RuntimeExecutionResult> {
+    const safeService = serviceName.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeService) {
+      return {
+        success: false,
+        command: 'docker compose stop',
+        stdout: '',
+        stderr: 'Invalid service name provided.',
+        exitCode: 1,
+        error: 'Invalid service name provided.',
+      };
+    }
+
+    const dockerEnv = await detectDockerEnvironment();
+    if (!dockerEnv.isDaemonRunning) {
+      return {
+        success: false,
+        command: `docker compose stop ${safeService}`,
+        stdout: '',
+        stderr: dockerEnv.error || 'Docker daemon is not running.',
+        exitCode: 1,
+        error: `${dockerEnv.error} ${dockerEnv.guidance || ''}`.trim(),
+      };
+    }
+
+    try {
+      const { stdout, stderr } = await execAsync(`docker compose stop ${safeService}`, {
+        cwd: projectDir,
+      });
+      return {
+        success: true,
+        command: `docker compose stop ${safeService}`,
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+        exitCode: 0,
+      };
+    } catch (err: unknown) {
+      const error = err as { stdout?: string; stderr?: string; code?: number; message?: string };
+      return {
+        success: false,
+        command: `docker compose stop ${safeService}`,
+        stdout: error.stdout || '',
+        stderr: error.stderr || error.message || String(err),
+        exitCode: error.code || 1,
+        error: error.message || String(err),
+      };
+    }
+  }
+
+  /**
+   * Restarts a specific service in the project compose configuration.
+   */
+  async restartService(projectDir: string, serviceName: string): Promise<RuntimeExecutionResult> {
+    const safeService = serviceName.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeService) {
+      return {
+        success: false,
+        command: 'docker compose restart',
+        stdout: '',
+        stderr: 'Invalid service name provided.',
+        exitCode: 1,
+        error: 'Invalid service name provided.',
+      };
+    }
+
+    const dockerEnv = await detectDockerEnvironment();
+    if (!dockerEnv.isDaemonRunning) {
+      return {
+        success: false,
+        command: `docker compose restart ${safeService}`,
+        stdout: '',
+        stderr: dockerEnv.error || 'Docker daemon is not running.',
+        exitCode: 1,
+        error: `${dockerEnv.error} ${dockerEnv.guidance || ''}`.trim(),
+      };
+    }
+
+    try {
+      const { stdout, stderr } = await execAsync(`docker compose restart ${safeService}`, {
+        cwd: projectDir,
+      });
+      return {
+        success: true,
+        command: `docker compose restart ${safeService}`,
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+        exitCode: 0,
+      };
+    } catch (err: unknown) {
+      const error = err as { stdout?: string; stderr?: string; code?: number; message?: string };
+      return {
+        success: false,
+        command: `docker compose restart ${safeService}`,
+        stdout: error.stdout || '',
+        stderr: error.stderr || error.message || String(err),
+        exitCode: error.code || 1,
+        error: error.message || String(err),
+      };
+    }
+  }
+
+  /**
+   * Retrieves bounded real logs for a service from `docker compose logs`.
+   */
+  async getServiceLogs(
+    projectDir: string,
+    serviceName: string,
+    tailLines = 100
+  ): Promise<{ success: boolean; logs: string; error?: string }> {
+    const safeService = serviceName.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeService) {
+      return {
+        success: false,
+        logs: '',
+        error: 'Invalid service name provided.',
+      };
+    }
+
+    const dockerEnv = await detectDockerEnvironment();
+    if (!dockerEnv.isDaemonRunning) {
+      return {
+        success: false,
+        logs: '',
+        error: dockerEnv.error || 'Docker daemon is not running.',
+      };
+    }
+    const boundedTail = Math.min(500, Math.max(10, Math.floor(tailLines)));
+
+    try {
+      const { stdout, stderr } = await execAsync(
+        `docker compose logs --tail=${boundedTail} --no-color ${safeService}`,
+        { cwd: projectDir }
+      );
+      const combined = (stdout || stderr || '').trim();
+      return {
+        success: true,
+        logs: combined.length > 0 ? combined : `(No log output available for ${safeService})`,
+      };
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      return {
+        success: false,
+        logs: '',
+        error: errorMsg,
+      };
+    }
+  }
   async getContainerStatuses(projectDir: string): Promise<ContainerState[]> {
     const dockerEnv = await detectDockerEnvironment();
     if (!dockerEnv.isDaemonRunning) {

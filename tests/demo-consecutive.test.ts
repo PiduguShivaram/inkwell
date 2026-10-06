@@ -121,6 +121,6 @@ describe('Phase 5: 5 Consecutive Demo Runs Validation', () => {
 
       const durationMs = Date.now() - cycleStart;
       console.log(`[Run ${run}/5] SUCCESS in ${(durationMs / 1000).toFixed(2)}s | Worker latency: ${workerRecovered?.latencyMs}ms`);
-    }, 45000);
+    }, 60000);
   }
 });

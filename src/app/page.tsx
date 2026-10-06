@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { ArchitectureWorkspace } from '@/components/ArchitectureWorkspace';
 import { CanvasWorkspace } from '@/components/CanvasWorkspace';
 import { CompilerInspector } from '@/components/CompilerInspector';
 import { DemoModePanel } from '@/components/DemoModePanel';
@@ -187,23 +188,20 @@ export default function InkwellWorkspacePage() {
           />
         )}
 
-        {/* TAB 1: Architecture Canvas & Validation */}
+        {/* TAB 1: Architecture Workspace (Phase 6 Product Expansion) */}
         {activeTab === 'workspace' && (
-          <div className="space-y-6">
-            <CanvasWorkspace
-              graph={graph}
-              setGraph={setGraph}
-              onCompile={handleCompile}
-              isCompiling={isCompiling}
-              selectedNodeId={selectedNodeId}
-              setSelectedNodeId={setSelectedNodeId}
-            />
-
-            <ValidationPanel
-              validation={validation}
-              onSelectNode={(nodeId) => setSelectedNodeId(nodeId)}
-            />
-          </div>
+          <ArchitectureWorkspace
+            graph={graph}
+            setGraph={setGraph}
+            onCompile={handleCompile}
+            isCompiling={isCompiling}
+            selectedNodeId={selectedNodeId}
+            setSelectedNodeId={setSelectedNodeId}
+            containers={containers}
+            onRefreshContainers={fetchContainers}
+            compiledProject={compiledProject}
+            dockerInfo={dockerInfo}
+          />
         )}
 
         {/* TAB 1.5: Phase 4 Office Kit & Phone/Laptop Bridge */}
