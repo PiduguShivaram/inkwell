@@ -124,4 +124,5 @@ Performs deterministic invariant checking:
 ---
 
 ## 📜 License
-Apache-2.0 / MIT
+
+No root-level `LICENSE` file is currently present. Licensing has not been declared for this repository; do not assume that the code is available under Apache-2.0 or MIT until a license is selected and added by the repository owner.
